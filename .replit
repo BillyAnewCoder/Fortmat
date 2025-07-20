@@ -21,4 +21,8 @@ args = "chmod +x build.sh"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "./build.sh x64"
+args = "./build.sh x64 --test"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "lua test_runner.lua"
