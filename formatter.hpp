@@ -3,12 +3,12 @@
 #include <cstddef>
 #include <unordered_map>
 
-#include "Lexer.h"
+#include "Luau/Lexer.h"
 #include "simplifier.hpp"
 
-#include "Ast.h"
-#include "Parser.h"
-#include "StringUtils.h"
+#include "Luau/Ast.h"
+#include "Luau/Parser.h"
+#include "Luau/StringUtils.h"
 #include <string>
 
 using namespace Luau;

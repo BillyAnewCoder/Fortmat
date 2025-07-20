@@ -5,7 +5,7 @@
 #include "cli.hpp"
 #include "formatter.hpp"
 
-#include "ToString.h"
+#include "Luau/ToString.h"
 
 using namespace LuauFormat;
 
