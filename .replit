@@ -1,0 +1,8 @@
+modules = ["cpp-clang14", "c-clang14", "bash"]
+run = "./build.sh x64"
+
+[nix]
+channel = "stable-24_05"
+
+[deployment]
+run = ["sh", "-c", "./build.sh x64"]
