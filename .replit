@@ -6,3 +6,19 @@ channel = "stable-24_05"
 
 [deployment]
 run = ["sh", "-c", "./build.sh x64"]
+
+[workflows]
+runButton = "Build and Test"
+
+[[workflows.workflow]]
+name = "Build and Test"
+author = 45290826
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "chmod +x build.sh"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "./build.sh x64"

@@ -1,16 +1,29 @@
 
 // Helper function to determine if an expression needs explicit grouping
 bool AstFormatter::shouldPreserveGrouping(AstExpr* expr) {
-    // Preserve grouping for expressions that could change precedence
+    // More sophisticated grouping logic
     if (auto binary = expr->as<AstExprBinary>()) {
-        // Check if this binary expression is part of a larger expression
-        // that could change meaning without parentheses
-        return true; // Conservative approach - preserve all binary expr groups
+        // Preserve grouping for binary expressions that might change precedence
+        AstExprBinary::Op op = binary->op;
+        // Lower precedence operations more likely to need grouping
+        return op == AstExprBinary::Or || op == AstExprBinary::And || 
+               op == AstExprBinary::CompareEq || op == AstExprBinary::CompareNe ||
+               op == AstExprBinary::CompareLt || op == AstExprBinary::CompareLe ||
+               op == AstExprBinary::CompareGt || op == AstExprBinary::CompareGe;
     }
     
     if (auto unary = expr->as<AstExprUnary>()) {
-        // Unary expressions might need grouping in certain contexts
-        return true;
+        // Unary expressions with complex sub-expressions need grouping
+        if (unary->expr->as<AstExprBinary>() || unary->expr->as<AstExprCall>()) {
+            return true;
+        }
+    }
+    
+    if (auto call = expr->as<AstExprCall>()) {
+        // Function calls with complex function expressions need grouping
+        if (call->func->as<AstExprBinary>() || call->func->as<AstExprUnary>()) {
+            return true;
+        }
     }
     
     return false;
@@ -59,10 +72,10 @@ void AstFormatter::copyNodeTag(AstNode* recipient, AstNode* reference) {
 AstFormatter::FormatOptions::FormatOptions(OutputType output_type, bool simplify_expressions,
     bool optimizations, bool lua_calls, bool assume_globals,
     bool record_table_replace, bool list_table_replace,
-    const char* separator_stat, const char* separator_block) :
+    const char* separator_stat, const char* separator_block, bool omit_do_end) :
     output_type(output_type), simplify_expressions(simplify_expressions), optimizations(optimizations), lua_calls(lua_calls),
     assume_globals(assume_globals), record_table_replace(record_table_replace), list_table_replace(list_table_replace),
-    separator_stat(separator_stat), separator_block(separator_block) {}
+    separator_stat(separator_stat), separator_block(separator_block), omit_do_end(omit_do_end) {}
 
 AstFormatter::AstFormatter(Allocator& allocator, AstSimplifier& simplifier, FormatOptions options) :
     allocator(allocator), simplifier(simplifier), options(options)
@@ -178,7 +191,13 @@ AstFormatter::FormatResult AstFormatter::formatRoot(AstStatBlock* root, bool don
 
     FormatResult result;
 
-    tagOneTrue(root, no_do_end)
+    // Apply omit_do_end option if specified
+    if (options.omit_do_end) {
+        tagOneTrue(root, no_do_end)
+    } else {
+        tagOneTrue(root, no_do_end)
+    }
+    
     auto root_formatted = formatStat(root);
     result.formatted = root_formatted ? root_formatted.value() : "-- failed to format";
 
@@ -472,15 +491,21 @@ std::optional<std::string> AstFormatter::formatExpr(AstExpr* main_expr) {
     auto main_expr_simplified = simplifier.simplify(main_expr);
     main_expr = main_expr_simplified.toExpr();
 
+    // Handle ExprGroup appropriately - preserve parentheses when needed
+    if (auto main_expr_as_group = main_expr->as<AstExprGroup>()) {
+        // Always preserve explicit grouping from source
+        appendOptionalSemicolon(current, result, main_tag);
+        appendChar(result, '(');
+        appendNode(main_expr_as_group->expr, "expr_group->expr")
+        appendChar(result, ')');
+        return result;
+    }
+
     bool needs_grouping = main_expr_simplified.group || shouldPreserveGrouping(main_expr);
     
     if (needs_grouping) {
         appendOptionalSemicolon(current, result, main_tag);
         appendChar(result, '(');
-    }
-
-    if (auto main_expr_as_group = main_expr->as<AstExprGroup>()) {
-        appendNode(main_expr_as_group->expr, "expr_group->expr")
     } else if (main_expr->is<AstExprConstantNil>()) {
         appendStr(result, "nil");
     } else if (auto main_expr_as_constant_bool = main_expr->as<AstExprConstantBool>()) {

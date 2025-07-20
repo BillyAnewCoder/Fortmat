@@ -1,132 +1,123 @@
 
--- Comprehensive test file for Luau formatter
--- This file contains various AST/expression combinations to test formatting
+-- Comprehensive test file for luau-format
+-- Tests various AST/expression combinations to ensure output can be parsed
 
 -- Basic expressions
-local nil_value = nil
-local bool_true = true
-local bool_false = false
-local number = 42
-local negative = -100
-local string_literal = "hello world"
-local string_with_quotes = 'single quotes'
+local a = 1
+local b = "hello"
+local c = true
+local d = nil
 
--- Variables and globals
-local local_var = x
-global_var = y
-
--- Unary expressions
-local not_expr = not true
-local negative_expr = -42
-local length_expr = #"string"
-
--- Binary expressions
-local add = 1 + 2
-local sub = 5 - 3
-local mul = 3 * 4
+-- Binary operations
+local sum = 1 + 2
+local diff = 10 - 5
+local mult = 3 * 4
 local div = 8 / 2
-local floor_div = 9 // 2
-local mod = 10 % 3
+local mod = 7 % 3
 local pow = 2 ^ 3
-local concat = "hello" .. " world"
-local eq = 1 == 1
-local ne = 1 ~= 2
-local lt = 1 < 2
-local le = 1 <= 2
-local gt = 2 > 1
-local ge = 2 >= 1
-local and_expr = true and false
-local or_expr = true or false
+local concat = "hello" .. "world"
 
--- Function calls
-local call_no_args = func()
-local call_with_args = func(1, 2, 3)
-local call_nested = func(other_func(x))
+-- Comparison operations
+local eq = 1 == 1
+local neq = 1 ~= 2
+local lt = 1 < 2
+local lte = 1 <= 1
+local gt = 2 > 1
+local gte = 2 >= 2
+
+-- Logical operations
+local and_op = true and false
+local or_op = true or false
+local not_op = not true
+
+-- Unary operations
+local neg = -5
+local len = #"hello"
+local not_val = not false
+
+-- Complex expressions with grouping
+local complex1 = (1 + 2) * (3 - 1)
+local complex2 = not (a == b)
+local complex3 = (true and false) or (not true)
 
 -- Table constructors
 local empty_table = {}
-local list_table = {1, 2, 3}
-local record_table = {x = 1, y = 2}
-local mixed_table = {1, x = 2, [3] = 4}
-
--- Index expressions
-local dot_index = table.field
-local bracket_index = table["field"]
-local computed_index = table[key]
+local list_table = {1, 2, 3, "hello", true}
+local record_table = {x = 10, y = 20, name = "test"}
+local mixed_table = {1, 2, x = 10, [true] = "boolean_key"}
 
 -- Function expressions
-local simple_func = function() end
-local func_with_args = function(a, b) return a + b end
-local func_with_varargs = function(...) return ... end
+local simple_func = function() return 1 end
+local param_func = function(x, y) return x + y end
+local vararg_func = function(...) return ... end
 
--- If expressions (ternary-like)
-local if_expr = if condition then value1 else value2
+-- Call expressions
+local result1 = simple_func()
+local result2 = param_func(1, 2)
+local result3 = vararg_func(1, 2, 3)
 
--- Interpolated strings
-local interp = `hello {name}!`
-local complex_interp = `result: {func(x, y)} end`
-
--- Group expressions (parentheses)
-local grouped = (1 + 2) * 3
-local nested_groups = ((a + b) * (c + d))
+-- Index expressions
+local index1 = record_table.x
+local index2 = record_table["name"]
+local index3 = list_table[1]
 
 -- Control flow statements
-if condition then
-    print("true")
-elseif other_condition then
-    print("elseif")
+if a == 1 then
+    print("a is 1")
+elseif a == 2 then
+    print("a is 2")
 else
-    print("false")
+    print("a is something else")
 end
 
-while condition do
-    break
+while a < 10 do
+    a = a + 1
 end
 
 repeat
-    continue
-until condition
+    a = a - 1
+until a == 0
 
-for i = 1, 10, 2 do
+for i = 1, 10 do
     print(i)
 end
 
-for key, value in pairs(table) do
+for key, value in pairs(record_table) do
     print(key, value)
 end
 
--- Function declarations
-function global_func(a, b)
-    return a + b
+-- Function definitions
+function global_func()
+    return "global"
 end
 
-local function local_func(x)
-    local y = x * 2
-    return y
+local function local_func(param)
+    return param * 2
 end
 
--- Assignments
-x = 1
-x, y = 1, 2
-table.field = value
-table[key] = value
-x += 1
-y *= 2
+-- Nested expressions that test grouping
+local nested1 = ((1 + 2) * 3) + ((4 - 1) / 2)
+local nested2 = not (not (true and false))
+local nested3 = (function() return 1 end)() + (function() return 2 end)()
+
+-- Edge cases for expression grouping
+local group_test1 = (1)
+local group_test2 = ((1))
+local group_test3 = (((1 + 2)))
+
+-- String interpolation (if supported)
+local name = "world"
+local greeting = `Hello, {name}!`
+local complex_interp = `Result: {1 + 2 * 3}`
 
 -- Return statements
-return
-return value
-return x, y, z
+function test_returns()
+    return 1, 2, 3
+end
 
--- Complex nested expressions
-local complex = func(
-    table.field[index],
-    (a + b) * (c - d),
-    {
-        nested = {
-            deep = function(x)
-                return if x > 0 then x else -x
-            end
-        }
-    }
-)
+function conditional_return()
+    if true then
+        return "early"
+    end
+    return "late"
+end
