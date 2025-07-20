@@ -1,3 +1,21 @@
+
+// Helper function to determine if an expression needs explicit grouping
+bool AstFormatter::shouldPreserveGrouping(AstExpr* expr) {
+    // Preserve grouping for expressions that could change precedence
+    if (auto binary = expr->as<AstExprBinary>()) {
+        // Check if this binary expression is part of a larger expression
+        // that could change meaning without parentheses
+        return true; // Conservative approach - preserve all binary expr groups
+    }
+    
+    if (auto unary = expr->as<AstExprUnary>()) {
+        // Unary expressions might need grouping in certain contexts
+        return true;
+    }
+    
+    return false;
+}
+
 #include "formatter.hpp"
 #include "simplifier.hpp"
 
@@ -454,7 +472,9 @@ std::optional<std::string> AstFormatter::formatExpr(AstExpr* main_expr) {
     auto main_expr_simplified = simplifier.simplify(main_expr);
     main_expr = main_expr_simplified.toExpr();
 
-    if (main_expr_simplified.group) {
+    bool needs_grouping = main_expr_simplified.group || shouldPreserveGrouping(main_expr);
+    
+    if (needs_grouping) {
         appendOptionalSemicolon(current, result, main_tag);
         appendChar(result, '(');
     }

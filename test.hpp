@@ -91,3 +91,11 @@ typedef struct {
 } TestState;
 
 uint8_t testSimplifier(TestState& state);
+uint8_t testFormatterRoundTrip(TestState& state);
+uint8_t testComprehensiveFormatting(TestState& state);
+
+// Helper function to validate that formatted code can be parsed
+bool validateFormattedCode(const std::string& formatted_code, Allocator& allocator);
+
+// Test that code can be formatted twice with identical results
+bool testDoubleFormat(const std::string& code, AstFormatter::FormatOptions options, Allocator& allocator);

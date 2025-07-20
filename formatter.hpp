@@ -118,12 +118,14 @@ public:
 
         const char* separator_stat;
         const char* separator_block;
+        bool omit_do_end;
 
         FormatOptions(
             OutputType output_type = Beautified, bool simplify_expressions = true,
             bool optimizations = false, bool lua_calls = false, bool assume_globals = false,
             bool record_table_replace = false, bool list_table_replace = false,
-            const char* separator_stat = nullptr, const char* separator_block = nullptr
+            const char* separator_stat = nullptr, const char* separator_block = nullptr,
+            bool omit_do_end = false
         );
     };
 
@@ -158,6 +160,7 @@ private:
     size_t appendOptionalSemicolon(std::string& current, std::string& result, NodeTag& main_tag);
 
     bool canSimplifyRepeatBody(AstStatRepeat* main_stat, SimplifyResult& condition_simplified);
+    bool shouldPreserveGrouping(AstExpr* expr);
 
     std::optional<std::string> formatExpr(AstExpr* expr);
     std::optional<std::string> formatStat(AstStat* stat);
