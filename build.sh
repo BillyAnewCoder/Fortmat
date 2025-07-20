@@ -118,6 +118,7 @@ if [[ $TEST ]]; then
     exit
 fi
 
-echo "buildling cli..."
-$compiler -std=c++17 -g -Wall $RELEASE_FLAGS $ASAN_FLAGS $STATIC_FLAGS -o $outfile main.cpp -Iinclude $LUAU_INCLUDE -L$luauformatbuilddir -lluau-format -L$luaubuilddir -lluau
+echo "building cli..."
+cd $builddir
+$compiler -std=c++17 -g -Wall $RELEASE_FLAGS $ASAN_FLAGS ../../main.cpp -I../../include -I../../ $LUAU_INCLUDE_BUILD -Lluau-format -lluau-format -LLuau -lluau $LUAU_LINK_FLAGS -o ../$outname
 echo "cli built to $outfile"
