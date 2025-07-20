@@ -1,11 +1,11 @@
 modules = ["cpp-clang14", "c-clang14", "bash"]
-run = "./build.sh x64"
+run = "./build.sh"
 
 [nix]
 channel = "stable-24_05"
 
 [deployment]
-run = ["sh", "-c", "./build.sh x64"]
+run = ["sh", "-c", "./build.sh"]
 
 [workflows]
 runButton = "Build and Test"
@@ -21,7 +21,7 @@ args = "chmod +x build.sh"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "./build.sh x64 --test"
+args = "./build.sh --test"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"

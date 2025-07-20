@@ -1388,3 +1388,87 @@ AstExpr* AstSimplifier::simplifyToExpr(AstExpr* expr, simplifyHook hook, void* h
 }
 
 }; // namespace LuauFormat
+#include "simplifier.hpp"
+#include "Luau/Ast.h"
+#include <cmath>
+
+ExpressionSimplifier::ExpressionSimplifier() : simplify_math_random(false) {
+    rng.seed(std::random_device{}());
+}
+
+AstExpr* ExpressionSimplifier::simplify(AstExpr* expression) {
+    if (!expression) return expression;
+    
+    if (AstExprBinary* binary = expression->as<AstExprBinary>()) {
+        return simplifyBinaryOp(binary);
+    }
+    
+    if (AstExprCall* call = expression->as<AstExprCall>()) {
+        if (simplify_math_random) {
+            return simplifyMathRandomCall(call);
+        }
+    }
+    
+    return simplifyConstantExpression(expression);
+}
+
+AstExpr* ExpressionSimplifier::simplifyBinaryOp(AstExprBinary* binary) {
+    // Simplify basic arithmetic with constants
+    if (AstExprConstantNumber* left = binary->left->as<AstExprConstantNumber>()) {
+        if (AstExprConstantNumber* right = binary->right->as<AstExprConstantNumber>()) {
+            double result;
+            switch (binary->op) {
+                case AstExprBinary::Add:
+                    result = left->value + right->value;
+                    break;
+                case AstExprBinary::Sub:
+                    result = left->value - right->value;
+                    break;
+                case AstExprBinary::Mul:
+                    result = left->value * right->value;
+                    break;
+                case AstExprBinary::Div:
+                    if (right->value != 0) {
+                        result = left->value / right->value;
+                    } else {
+                        return binary; // Don't simplify division by zero
+                    }
+                    break;
+                case AstExprBinary::Pow:
+                    result = std::pow(left->value, right->value);
+                    break;
+                default:
+                    return binary;
+            }
+            // In a real implementation, we'd create a new AstExprConstantNumber
+            // For now, return the original
+            return binary;
+        }
+    }
+    
+    return binary;
+}
+
+AstExpr* ExpressionSimplifier::simplifyMathRandomCall(AstExprCall* call) {
+    // WARNING: This is potentially dangerous and should only be used under specific options
+    if (!simplify_math_random) return call;
+    
+    // Check if this is a math.random() call
+    if (AstExprIndexName* index = call->func->as<AstExprIndexName>()) {
+        if (AstExprGlobal* global = index->expr->as<AstExprGlobal>()) {
+            if (global->name == "math" && index->index == "random") {
+                // Replace with a constant random value
+                // In a real implementation, we'd create a new AstExprConstantNumber
+                // For now, return the original call
+                return call;
+            }
+        }
+    }
+    
+    return call;
+}
+
+AstExpr* ExpressionSimplifier::simplifyConstantExpression(AstExpr* expression) {
+    // Handle other constant folding cases
+    return expression;
+}

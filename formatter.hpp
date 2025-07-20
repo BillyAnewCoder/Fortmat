@@ -8,6 +8,8 @@
 
 #include "Luau/Ast.h"
 #include "Luau/Parser.h"
+#include "Luau/StringUtils.h"
+#include <string>
 
 using namespace Luau;
 
@@ -50,6 +52,17 @@ class RecordTableReplaceVisitor;
 class ListTableReplaceVisitor;
 
 class AstFormatter {
+private:
+    std::string result;
+    int indent_level = 0;
+    bool preserve_whitespace = false;
+    bool omit_do_end = false;
+    bool simplify_expressions = false;
+
+    void writeIndent();
+    void writeLine();
+    bool needsParentheses(AstExpr* expr, AstExpr* parent);
+
     Allocator& allocator;
     AstSimplifier& simplifier;
     std::vector<std::string> errors;
@@ -175,6 +188,17 @@ public:
     static FormatResult formatRoot(AstStatBlock* root, Allocator& allocator, FormatOptions options);
 
     FormatResult formatRoot(AstStatBlock* root, bool dont_make_visitors = false);
+
+    AstFormatter();
+    void setPreserveWhitespace(bool preserve) { preserve_whitespace = preserve; }
+    void setOmitDoEnd(bool omit) { omit_do_end = omit; }
+    void setSimplifyExpressions(bool simplify) { simplify_expressions = simplify; }
+
+    std::string format(AstStatBlock* root);
+    void formatStatement(AstStat* statement);
+    void formatExpression(AstExpr* expression, AstExpr* parent = nullptr);
+
+    static std::string formatRoot(AstStatBlock* root, bool omitDoEnd = false);
 };
 
 }; // namespace LuauFormat

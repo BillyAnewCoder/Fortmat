@@ -42,6 +42,10 @@ while [[ $# -gt 0 ]]; do
             ASAN_FLAGS=-fsanitize=address
             shift
             ;;
+        x64)
+            # x64 is implicit on modern systems, just ignore this option
+            shift
+            ;;
         *)
             echo "Unknown option: $1"
             exit 1

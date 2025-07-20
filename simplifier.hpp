@@ -188,3 +188,25 @@ private:
 };
 
 }; // namespace LuauFormat
+#pragma once
+
+#include "Luau/Ast.h"
+#include <string>
+#include <random>
+
+using namespace Luau;
+
+class ExpressionSimplifier {
+private:
+    bool simplify_math_random = false;
+    std::mt19937 rng;
+    
+public:
+    ExpressionSimplifier();
+    void setSimplifyMathRandom(bool enable) { simplify_math_random = enable; }
+    
+    AstExpr* simplify(AstExpr* expression);
+    AstExpr* simplifyBinaryOp(AstExprBinary* binary);
+    AstExpr* simplifyMathRandomCall(AstExprCall* call);
+    AstExpr* simplifyConstantExpression(AstExpr* expression);
+};
